@@ -6,6 +6,7 @@ class Scoreboard {
     private const INSERT_LINE_ITEM_QUERY = 'INSERT INTO game_line_item (game_id, player_id, is_winner) VALUES (:game_id, :player_id, :is_winner)';
     private const GET_SCORES_QUERY = 'SELECT nickname, COUNT(player_id) AS total_wins FROM game_line_item JOIN players ON player_id=players.id WHERE is_winner=1 GROUP BY player_id ORDER BY total_wins DESC;';
     private const GET_ALL_PLAYERS_QUERY = 'SELECT * FROM players;';
+    private const REGISTER_PLAYER_QUERY = 'INSERT INTO players (nickname) VALUES (:nickname)';
     private const DB_FILENAME = 'timmy.db';
 
     function __construct() {
@@ -50,6 +51,10 @@ class Scoreboard {
                 ]);
             }
         });
+    }
+
+    function registerPlayer($nickname) {
+        $this->executeQueryWithParameters(self::REGISTER_PLAYER_QUERY, ['nickname' => strtolower($nickname)]);
     }
 
     private function executeQueryWithParameters($query, $params = []) {

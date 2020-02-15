@@ -2,6 +2,11 @@
 <?php
 namespace Timmy;
 
+if (php_sapi_name() !== 'cli') {
+    echo "Go play outside";
+    exit(0);
+}
+
 // Require psysh and all our code
 $files = glob('lib/*.php');
 $files[] = 'bin/psysh';

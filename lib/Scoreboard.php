@@ -4,11 +4,22 @@ class Scoreboard {
 
     private const INSERT_GAME_QUERY = 'INSERT INTO games (comment) VALUES (:comment)';
     private const INSERT_LINE_ITEM_QUERY = 'INSERT INTO game_line_item (game_id, player_id, is_winner) VALUES (:game_id, :player_id, :is_winner)';
-    private const DB_FILENAME = 'scoreboard.db';
+    private const GET_SCORES_QUERY = 'SELECT nickname, COUNT(player_id) AS total_wins FROM game_line_item JOIN players ON player_id=players.id WHERE is_winner=1 GROUP BY player_id ORDER BY total_wins DESC;';
+    private const GET_ALL_PLAYERS_QUERY = 'SELECT * FROM players;';
+    private const DB_FILENAME = 'timmy.db';
 
     function __construct() {
         $this->db = new SQLite3(self::DB_FILENAME);
         $this->db->enableExceptions(true);
+    }
+
+    function getScores() {
+        $result = $this->db->query(sefl::GET_SCORES_QUERY);
+        $scores = [];
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            $scores[] = $row;
+        }
+        return $scores;
     }
 
     function recordGame($playerNicknames, $winnerNickname, $comment = "") {
@@ -41,7 +52,7 @@ class Scoreboard {
         });
     }
 
-    private function executeQueryWithParameters($query, $params) {
+    private function executeQueryWithParameters($query, $params = []) {
         $statement = $this->db->prepare($query);
         foreach ($params as $key => $value) {
             $statement->bindValue(":" . $key, $value);
@@ -62,7 +73,7 @@ class Scoreboard {
     }
 
     private function getPlayerIDMap() {
-        $result = $this->db->query('SELECT * FROM players');
+        $result = $this->db->query(self::GET_ALL_PLAYERS_QUERY);
         $map = [];
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
             $map[$row['nickname']] = $row['id'];

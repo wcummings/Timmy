@@ -4,9 +4,10 @@ class Scoreboard {
 
     private const INSERT_GAME_QUERY = 'INSERT INTO games (comment) VALUES (:comment)';
     private const INSERT_LINE_ITEM_QUERY = 'INSERT INTO game_line_item (game_id, player_id, is_winner) VALUES (:game_id, :player_id, :is_winner)';
+    private const DB_FILENAME = 'scoreboard.db';
 
     function __construct() {
-        $this->db = new SQLite3('scoreboard.db');
+        $this->db = new SQLite3(self::DB_FILENAME);
     }
 
     function recordGame($playerNicknames, $winnerNickname, $comment = "") {

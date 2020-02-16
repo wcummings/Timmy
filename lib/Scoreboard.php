@@ -3,7 +3,7 @@ class Scoreboard {
 
     const INSERT_GAME_QUERY = 'INSERT INTO games (comment) VALUES (:comment)';
     const INSERT_LINE_ITEM_QUERY = 'INSERT INTO game_line_item (game_id, player_id, is_winner) VALUES (:game_id, :player_id, :is_winner)';
-    const GET_SCORES_QUERY = 'SELECT nickname, SUM(game_line_item.is_winner) AS total_wins FROM players LEFT JOIN game_line_item ON id = game_line_item.player_id GROUP BY player_id ORDER BY total_wins DESC;';
+    const GET_SCORES_QUERY = 'SELECT nickname, count(nickname) AS total_wins FROM game_line_item JOIN players ON players.id = player_id WHERE is_winner=1 GROUP BY player_id ORDER BY total_wins DESC;';
     const GET_ALL_PLAYERS_QUERY = 'SELECT * FROM players;';
     const REGISTER_PLAYER_QUERY = 'INSERT INTO players (nickname) VALUES (:nickname)';
     const DB_FILENAME = 'timmy.db';
@@ -15,10 +15,18 @@ class Scoreboard {
 
     function getScores() {
         $result = $this->db->query(self::GET_SCORES_QUERY);
+        $nicknames = $this->getPlayerIDMap();
         $scores = [];
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
             $scores[] = $row;
+            unset($nicknames[$row['nickname']]);
         }
+
+        // Insert zero's for remaining players because we can't RIGHT JOIN
+        foreach ($nicknames as $key => $value) {
+            $scores[] = ['nickname' => $key, 'total_wins' => 0];
+        }
+
         return $scores;
     }
 

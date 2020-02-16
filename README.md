@@ -36,4 +36,3 @@ $scoreboard->registerPlayer('Will');
 ```bash
 ./bin/shell.php
 ```
-

@@ -1,6 +1,9 @@
 <?php
 require('lib/Util.php');
 require('lib/BotCore.php');
+require('lib/Scoreboard.php');
+
+$COMMANDER_WEBHOOK = getenv('COMMANDER_WEBHOOK');
 
 $BULLSHIT_CARDS = [
     "azcanta",
@@ -13,19 +16,54 @@ $BULLSHIT_CARDS = [
     "protean hulk"
 ];
 
-$COMMANDER_WEBHOOK = getenv('COMMANDER_WEBHOOK');
+$bot = new BotCore();
 
-$body = Util::handleWebhookChallenge();
+foreach ($BULLSHIT_CARDS as $bullshit_card) {
+    $bot->registerRegex('/(' . strtolower($bullshit_card) . ')/i', 'handleBullshitCard');
+}
+
+$bot->registerRegex('/^Timmy show the scoreboard/i', 'showScoreboard');
+$bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
+$bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
+$bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
+$bot->registerRegex('/^Timmy/', 'iDontUnderstand');
 
 function handleBullshitCard($bot, $matches) {
     // $bot->respond(Util::memeify($matches[0] . 'is a bullshit card'));
     Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], Util::memeify($matches[0] . ' is a bullshit card'));
 }
 
-$bot = new BotCore();
-foreach ($BULLSHIT_CARDS as $bullshit_card) {
-    $bot->registerRegex('/(' . strtolower($bullshit_card) . ')/i', 'handleBullshitCard');
+function showScoreboard($bot, $matches) {
+    $scoreboard = new Scoreboard();
+    
+    foreach ($scoreboard->getScores() as $score) {
+        $response .= sprintf(":star: *%s:* %d\n", ucfirst($score['nickname']), $score['total_wins']);
+    }
+
+    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], $response);
 }
+
+function recordGame($bot, $matches) {
+    $scoreboard = new Scoreboard();
+
+    $playerNicknamesString = strtolower($matches[1]);
+    $playerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $playerNicknamesString), function ($s) { return $s != ''; });
+    $winnerNickname = trim(strtolower($matches[2]));
+
+    try {
+        $scoreboard->recordGame($playerNicknames, $winnerNickname);
+        Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'Your wish is my command');
+    } catch (Exception $e) {
+        Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], $e->getMessage());
+    }
+
+}
+
+function iDontUnderstand($bot, $matches) {
+    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'I don\'t understand');
+}
+
+$body = Util::handleWebhookChallenge();
 
 $bot->handleMessage($body['event']['text']);
 ?>

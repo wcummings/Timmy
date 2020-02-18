@@ -1,9 +1,10 @@
 <?php
-require('lib/Util.php');
-require('lib/BotCore.php');
-require('lib/Scoreboard.php');
+require_once('lib/Util.php');
+require_once('lib/BotCore.php');
+require_once('lib/Scoreboard.php');
+require_once('lib/IdempotencyCheck.php');
 
-$COMMANDER_WEBHOOK = getenv('COMMANDER_WEBHOOK');
+$COMMANDER_WEBHOOK = getenv('COMMANER_WEBHOOK');
 
 $BULLSHIT_CARDS = [
     "azcanta",
@@ -16,17 +17,19 @@ $BULLSHIT_CARDS = [
     "protean hulk"
 ];
 
+$db = new SQLite3('timmy.db');
 $bot = new BotCore();
+$bot->setValue('db', $db);
 
 foreach ($BULLSHIT_CARDS as $bullshit_card) {
     $bot->registerRegex('/(' . strtolower($bullshit_card) . ')/i', 'handleBullshitCard');
 }
 
-$bot->registerRegex('/^Timmy show the scoreboard/i', 'showScoreboard');
+$bot->registerRegex('/^Timmy show.*the scoreboard/i', 'showScoreboard');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
-$bot->registerRegex('/^Timmy/', 'iDontUnderstand');
+$bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 
 function handleBullshitCard($bot, $matches) {
     // $bot->respond(Util::memeify($matches[0] . 'is a bullshit card'));
@@ -34,8 +37,9 @@ function handleBullshitCard($bot, $matches) {
 }
 
 function showScoreboard($bot, $matches) {
-    $scoreboard = new Scoreboard();
-    
+    $scoreboard = new Scoreboard($bot->getValue('db'));
+
+    $response = '';
     foreach ($scoreboard->getScores() as $score) {
         $response .= sprintf(":star: *%s:* %d\n", ucfirst($score['nickname']), $score['total_wins']);
     }
@@ -44,7 +48,7 @@ function showScoreboard($bot, $matches) {
 }
 
 function recordGame($bot, $matches) {
-    $scoreboard = new Scoreboard();
+    $scoreboard = new Scoreboard($bot->getValue('db'));
 
     $playerNicknamesString = strtolower($matches[1]);
     $playerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $playerNicknamesString), function ($s) { return $s != ''; });
@@ -64,6 +68,12 @@ function iDontUnderstand($bot, $matches) {
 }
 
 $body = Util::handleWebhookChallenge();
+$checker = new IdempotencyCheck($db);
+if (!$checker->checkEventId($body['event_id'])) {
+    return;
+}
+
+file_put_contents('log/event_hooks.log', json_encode($body) . PHP_EOL, FILE_APPEND | LOCK_EX);
 
 $bot->handleMessage($body['event']['text']);
 ?>

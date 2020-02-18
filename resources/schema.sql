@@ -16,3 +16,7 @@ CREATE TABLE IF NOT EXISTS game_line_item (
        FOREIGN KEY(game_id) REFERENCES games(id),
        FOREIGN KEY(player_id) REFERENCES players(id)
 );
+
+CREATE TABLE IF NOT EXISTS webhook_idempotency (
+       event_id VARCHAR(24) PRIMARY KEY
+);

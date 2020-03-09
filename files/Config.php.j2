@@ -11,7 +11,7 @@ class Config {
     const LOG_DIR = '{{ log_dir }}';
 
     function webhookURL() {
-        return self::WEBHOOK_PREFIX + self::WEBHOOK_SECRET;
+        return self::WEBHOOK_PREFIX . self::WEBHOOK_SECRET;
     }
 
 }

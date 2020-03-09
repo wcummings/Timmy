@@ -6,3 +6,6 @@ vagrant-ip:
 
 tail-errs:
 	vagrant ssh -c 'tail -n 20 /var/log/apache2/error.log'
+
+tail-axs:
+	vagrant ssh -c 'tail -n 20 /var/log/apache2/access.log'

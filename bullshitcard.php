@@ -8,7 +8,7 @@ require_once('lib/Config.php');
 $COMMANDER_WEBHOOK = Config::webhookURL();
 
 if (Config::TEST_MODE) {
-    $COMMANDER_WEBHOOK = 'http://localhost/' . Config::URL_PREFIX . '/bullshitcard.php';
+    $COMMANDER_WEBHOOK = 'http://localhost/' . Config::URL_PREFIX . 'test_webhook.php';
 }
 
 $BULLSHIT_CARDS = [
@@ -74,7 +74,7 @@ function iDontUnderstand($bot, $matches) {
 
 $body = Util::handleWebhookChallenge();
 $checker = new IdempotencyCheck($db);
-if (!$checker->checkEventId($body['event_id'])) {
+if (!Config::TEST_MODE && !$checker->checkEventId($body['event_id'])) {
     return;
 }
 

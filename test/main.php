@@ -2,8 +2,17 @@
 
 $host = $argv[1];
 
+echo "Test 1:\n";
 $response = simulateWebhook($host, 'webhook1');
-echo $response;
+assertEquals(":star: *Will:* 0\\n", trim($response));
+
+function assertEquals($expected, $response) {
+    if ($expected !== $response) {
+        throw new Exception($expected . " !== " . $response);
+    } else {
+        echo $expected . ' = ' . $response . "\n";
+    }
+}
 
 function simulateWebhook($host, $file) {
     $body = file_get_contents('test/files/' . $file . '.json');

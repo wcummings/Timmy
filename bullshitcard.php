@@ -3,8 +3,13 @@ require_once('lib/Util.php');
 require_once('lib/BotCore.php');
 require_once('lib/Scoreboard.php');
 require_once('lib/IdempotencyCheck.php');
+require_once('lib/Config.php');
 
-$COMMANDER_WEBHOOK = getenv('COMMANER_WEBHOOK');
+$COMMANDER_WEBHOOK = Config::webhookURL();
+
+if (Config::TEST_MODE) {
+    $COMMANDER_WEBHOOK = 'http://localhost/' . Config::URL_PREFIX . '/bullshitcard.php';
+}
 
 $BULLSHIT_CARDS = [
     "azcanta",
@@ -73,7 +78,7 @@ if (!$checker->checkEventId($body['event_id'])) {
     return;
 }
 
-file_put_contents('log/event_hooks.log', json_encode($body) . PHP_EOL, FILE_APPEND | LOCK_EX);
+file_put_contents(Config::LOG_DIR . '/event_hooks.log', json_encode($body) . PHP_EOL, FILE_APPEND | LOCK_EX);
 
 $bot->handleMessage($body['event']['text']);
 ?>

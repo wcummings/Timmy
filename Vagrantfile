@@ -6,7 +6,8 @@ Vagrant.configure("2") do |config|
     ansible.verbose = "v"
     ansible.playbook = "playbook.yml"
     ansible.extra_vars = {
-      app_user: "vagrant"
+      app_user: "vagrant",
+      test_mode: true
     }
   end
   

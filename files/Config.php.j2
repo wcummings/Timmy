@@ -1,0 +1,18 @@
+<?php
+class Config {
+    
+    const URL_PREFIX = 'timmy/';
+    const WEBHOOK_PREFIX = 'https://hooks.slack.com/services/';
+                       
+    const WEBHOOK_SECRET = '{{ webhook_secret }}';
+
+    const TEST_MODE = {% if test_mode %}TRUE{% else %}FALSE{% endif %};
+
+    const LOG_DIR = '{{ log_dir }}';
+
+    function webhookURL() {
+        return self::WEBHOOK_PREFIX + self::WEBHOOK_SECRET;
+    }
+
+}
+?>

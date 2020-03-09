@@ -8,7 +8,7 @@
     # Apache Configuration
     - name: Install LAMP Packages
       apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
-      loop: [ 'apache2', 'mysql-server', 'python3-pymysql', 'php', 'php-mysql', 'libapache2-mod-php', 'rabbitmq-server' ]
+      loop: [ 'apache2', 'mysql-server', 'python3-pymysql', 'php', 'php-mysql', 'php-curl', 'php-sqlite3', 'libapache2-mod-php', 'rabbitmq-server' ]
 
     - name: Create document root
       file:
@@ -48,11 +48,37 @@
     - name: Copy PHP Files
       copy:
         src: "{{ playbook_dir }}/lib"
-        dest: "/var/www/{{ http_host }}/timmy/lib"
+        dest: "/var/www/{{ http_host }}/timmy"
+        owner: www-data
+        group: www-data
+        mode: 0775
     - name: Copy PHP Files
       copy:
         src: "{{ playbook_dir }}/bullshitcard.php"
         dest: "/var/www/{{ http_host }}/timmy"
+    - name: Copy PHP Files
+      copy:
+        src: "{{ playbook_dir }}/test_webhook.php"
+        dest: "/var/www/{{ http_host }}/timmy"
+    - name: Copy DB
+      copy:
+        src: "{{ playbook_dir }}/timmy_empty.db"
+        dest: "/var/www/{{ http_host }}/timmy/timmy.db"
+        force: no
+        owner: www-data
+        group: www-data
+        mode: 0775
+    - name: Config template
+      template:
+        src: "files/Config.php.j2"
+        dest: "/var/www/{{ http_host }}/timmy/lib/Config.php"
+    - name: Create log dir
+      file:
+        path: "{{ log_dir }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: 0775
 
   handlers:
     - name: Reload Apache

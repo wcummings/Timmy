@@ -1,4 +1,7 @@
 <?php
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
+
 class Util {
     
     function memeify($str) {
@@ -36,6 +39,38 @@ class Util {
         }
 
         return $body;
+    }
+
+    function publishQueueMessage($payload) {
+        $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+        $channel = $connection->channel();
+
+        $channel->queue_declare('task_queue', false, true, false, false);
+
+        $msg = new AMQPMessage(
+            $payload,
+            array('delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT)
+        );
+
+        $channel->basic_publish($msg, '', 'task_queue');
+
+        $channel->close();
+        $connection->close();
+    }
+
+    function processQueueMessages($callback)  {
+        $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+        $channel = $connection->channel();
+
+        $channel->queue_declare('task_queue', false, true, false, false);
+        $channel->basic_qos(null, 1, null);
+        $channel->basic_consume('task_queue', '', false, false, false, false, $callback);
+        while ($channel->is_consuming()) {
+            $channel->wait();
+        }
+
+        $channel->close();
+        $connection->close();
     }
 
 }

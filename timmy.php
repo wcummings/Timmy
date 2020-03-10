@@ -72,15 +72,16 @@ function iDontUnderstand($bot, $matches) {
     Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'I don\'t understand');
 }
 
-$checker = new IdempotencyCheck($db);
-if (!$checker->checkEventId($body['event_id'])) {
-    if (!Config::TEST_MODE) {
-        return;
-    }
-}
-
 Util::processQueueMessages(function ($json) use ($bot) {
     $body = json_decode($json);
+
+    $checker = new IdempotencyCheck($db);
+    if (!$checker->checkEventId($body['event_id'])) {
+        if (!Config::TEST_MODE) {
+            return;
+        }
+    }
+
     $bot->handleMessage($body['event']['text']);
 });
 ?>

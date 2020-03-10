@@ -1,0 +1,14 @@
+[Unit]
+Description=Timmy
+
+[Service]
+PIDFile=/var/run/timmy.pid
+WorkingDirectory=/var/www/{{ http_host}}/timmy
+ExecStart=/usr/bin/php /var/www/{{ http_host }}/timmy/timmy.php > /dev/null 2>/dev/null
+User=www-data
+Group=www-data
+Type=simple
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

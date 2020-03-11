@@ -8,7 +8,7 @@
     # Apache Configuration
     - name: Install LAMP Packages
       apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
-      loop: [ 'apache2', 'mysql-server', 'python3-pymysql', 'php', 'php-mysql', 'php-curl', 'php-sqlite3', 'libapache2-mod-php', 'rabbitmq-server', 'composer' ]
+      loop: [ 'apache2', 'mysql-server', 'python3-pymysql', 'php', 'php-mysql', 'php-curl', 'php-sqlite3', 'libapache2-mod-php', 'rabbitmq-server', 'composer', 'php-amqplib' ]
 
     - name: Create document root
       file:
@@ -118,3 +118,4 @@
       service:
         name: rabbitmq-server
         state: restarted
+

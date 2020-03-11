@@ -9,3 +9,6 @@ tail-errs:
 
 tail-axs:
 	vagrant ssh -c 'tail -n 20 /var/log/apache2/access.log'
+
+deploy:
+	ansible-playbook playbook.yml --extra-vars "variable_host=timmy"

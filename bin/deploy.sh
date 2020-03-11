@@ -1,2 +1,3 @@
 #!/bin/sh
-scp -r * wpcio:/var/www/timmy
+ansible-playbook playbook.yml --extra-vars "variable_host=timmy"
+

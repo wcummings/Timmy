@@ -5,8 +5,6 @@ require_once('lib/Scoreboard.php');
 require_once('lib/IdempotencyCheck.php');
 require_once('lib/Config.php');
 
-# $COMMANDER_WEBHOOK = 'https://hooks.slack.com/services/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';
-# $COMMANDER_WEBHOOK = 'https://hooks.slack.com/services/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';
 $COMMANDER_WEBHOOK = Config::webhookURL();
 
 if (Config::TEST_MODE) {

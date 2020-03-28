@@ -83,6 +83,11 @@ function rollDice($bot, $matches) {
     $sides = $matches[2];
     $rolls = [];
     
+    if ($no_rolls > 10) {
+        Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], Util::memeify('This isnt Warhammer bro'));
+        return;
+    }
+
     for ($i = 0; $i < $no_rolls; $i++) {
         $rolls[] = rand(1, $sides);
     }

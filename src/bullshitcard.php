@@ -1,5 +1,6 @@
 <?php
 require_once('lib/Util.php');
+Util::configureErrorLogging();
 require_once('lib/Config.php');
 
 $body = Util::handleWebhookChallenge();

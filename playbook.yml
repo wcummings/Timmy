@@ -39,30 +39,39 @@
         port: "{{ http_port }}"
         proto: tcp
 
-    - name: Copy application files
+    - name: Copy daemon
       copy:
-        src: "{{ playbook_dir }}/lib"
-        dest: "/var/www/{{ http_host }}/timmy"
+        src: "{{ playbook_dir }}/src/daemon.php"
+        dest: "/var/www/{{ http_host }}/timmy/"
+        owner: www-data
+        group: www-data
+        mode: 0775
+
+    - name: Copy bullshitcard (webhook) route
+      copy:
+        src: "{{ playbook_dir }}/src/bullshitcard.php"
+        dest: "/var/www/{{ http_host }}/timmy/"
+        owner: www-data
+        group: www-data
+        mode: 0775
+
+    - name: Copy test_webhook
+      copy:
+        src: "{{ playbook_dir }}/src/test_webhook.php"
+        dest: "/var/www/{{ http_host }}/timmy/"
         owner: www-data
         group: www-data
         mode: 0775
 
     - name: Copy application files
       copy:
-        src: "{{ playbook_dir }}/bullshitcard.php"
-        dest: "/var/www/{{ http_host }}/timmy"
+        src: "{{ playbook_dir }}/src/lib"
+        dest: "/var/www/{{ http_host }}/timmy/"
+        owner: www-data
+        group: www-data
+        mode: 0775
 
-    - name: Copy application files
-      copy:
-        src: "{{ playbook_dir }}/timmy.php"
-        dest: "/var/www/{{ http_host }}/timmy"
-
-    - name: Copy PHP Files
-      copy:
-        src: "{{ playbook_dir }}/test_webhook.php"
-        dest: "/var/www/{{ http_host }}/timmy"
-
-    - name: Install deps
+    - name: Install PHP dependencies
       composer:
         command: require
         arguments: php-amqplib/php-amqplib
@@ -77,7 +86,7 @@
         group: www-data
         mode: 0775
 
-    - name: Config template
+    - name: Populate config
       template:
         src: "files/Config.php.j2"
         dest: "/var/www/{{ http_host }}/timmy/lib/Config.php"
@@ -92,15 +101,15 @@
 
     - name: Install systemd service
       template:
-        src: "files/timmy.service.j2"
-        dest: "/etc/systemd/system/timmy.service"
+        src: "files/timmy-daemon.service.j2"
+        dest: "/etc/systemd/system/timmy-daemon.service"
         owner: root
         group: root
 
-    - name: Make sure PHP worker daemon is running
+    - name: Ensure Timmy background service is running
       systemd:
-        name: timmy
-        state: started
+        name: timmy-daemon
+        state: restarted
         daemon_reload: yes
 
   handlers:
@@ -119,3 +128,7 @@
         name: rabbitmq-server
         state: restarted
 
+    - name: Restart Timmy background service
+      service:
+        name: timmy-daemon
+        state: restarted

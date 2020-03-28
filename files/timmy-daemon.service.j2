@@ -1,10 +1,10 @@
 [Unit]
-Description=Timmy
+Description=Timmy Daemon
 
 [Service]
 PIDFile=/var/run/timmy.pid
 WorkingDirectory=/var/www/{{ http_host}}/timmy
-ExecStart=/usr/bin/php /var/www/{{ http_host }}/timmy/timmy.php > /dev/null 2>/dev/null
+ExecStart=/usr/bin/php /var/www/{{ http_host }}/timmy/daemon.php > /dev/null 2>/dev/null
 User=www-data
 Group=www-data
 Type=simple

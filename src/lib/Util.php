@@ -65,13 +65,21 @@ class Util {
 
         $channel->queue_declare('task_queue', false, true, false, false);
         $channel->basic_qos(null, 1, null);
-        $channel->basic_consume('task_queue', '', false, false, false, false, $callback);
+        $channel->basic_consume('task_queue', '', false, false, false, false, function($msg) use ($callback) {
+            $callback($msg);
+            $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+        });
         while ($channel->is_consuming()) {
             $channel->wait();
         }
 
         $channel->close();
         $connection->close();
+    }
+
+    function configureErrorLogging() {
+        ini_set('log_errors', TRUE);
+        error_reporting(E_ALL);
     }
 
 }

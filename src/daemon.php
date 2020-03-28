@@ -1,5 +1,6 @@
 <?php
 require_once('lib/Util.php');
+Util::configureErrorLogging();
 require_once('lib/BotCore.php');
 require_once('lib/Scoreboard.php');
 require_once('lib/IdempotencyCheck.php');
@@ -34,6 +35,8 @@ $bot->registerRegex('/^Timmy show.*the scoreboard/i', 'showScoreboard');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
+$bot->RegisterRegex('/^Timmy roll a d(\d+)/i', 'rollDie');
+$bot->RegisterRegex('/^Timmy roll \d+ d(\d+)/i', 'rollDice');
 $bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 
 function handleBullshitCard($bot, $matches) {
@@ -68,12 +71,35 @@ function recordGame($bot, $matches) {
 
 }
 
+function rollDie($bot, $matches) {
+    $sides = $matches[1];
+    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'BIG MONAYYYY.....');
+    sleep(2);
+    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], sprintf(':game_die: *(%d)* :game_die:', rand(1, $sides)));
+}
+
+function rollDice($bot, $matches) {
+    $no_rolls = $matches[1];
+    $sides = $matches[2];
+    $rolls = [];
+    
+    for ($i = 0; $i < $no_rolls; $i++) {
+        $rolls[] = rand(1, $sides);
+    }
+
+    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'NOOOO WHAMMMMIEEESS.....');
+    sleep(2);
+    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], ':game_die: ' . implode(' ', array_map(function ($roll) { return " *(".$roll.")* "; }, $rolls)) . ' :game_die:');
+}
+
 function iDontUnderstand($bot, $matches) {
     Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'I don\'t understand');
 }
 
 Util::processQueueMessages(function ($msg) use ($bot, $db) {
     $body = json_decode($msg->body, true);
+
+    echo "* Received message ", $msg->body, "\n";
 
     $checker = new IdempotencyCheck($db);
     if (!$checker->checkEventId($body['event_id'])) {

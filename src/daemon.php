@@ -36,7 +36,7 @@ $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i'
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
 $bot->RegisterRegex('/^Timmy roll a d(\d+)/i', 'rollDie');
-$bot->RegisterRegex('/^Timmy roll \d+ d(\d+)/i', 'rollDice');
+$bot->RegisterRegex('/^Timmy roll (\d+) d(\d+)/i', 'rollDice');
 $bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 
 function handleBullshitCard($bot, $matches) {

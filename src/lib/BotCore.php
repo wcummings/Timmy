@@ -34,8 +34,10 @@ class BotCore {
     }
 
     public function reply($ctx, $message) {
-        $webhookURL = $oauth->getWebhookForChannel($ctx['channel_id']);
-        Util::sendSlackMessage($webhookURL, $message);
+        $webhookURL = $this->oauth->getWebhookForChannel($ctx['channel_id']);
+        if ($webhookURL != NULL) {
+            Util::sendSlackMessage($webhookURL, $message);
+        }
     }
 
 }

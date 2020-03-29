@@ -55,7 +55,11 @@ class OAuth extends DbCore {
 
         $result = $this->executeQueryWithParameters(self::GET_WEBHOOK_QUERY, ['channel_id' => $channel_id]);
         $row = $result->fetchArray(SQLITE3_ASSOC);
-        return $row['url'];
+        if (!$row) {
+            return NULL;
+        } else {
+            return $row['url'];
+        }
     }
 
     // TODO: method to retrieve access token

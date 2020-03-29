@@ -5,6 +5,7 @@ require_once('lib/BotCore.php');
 require_once('lib/Scoreboard.php');
 require_once('lib/IdempotencyCheck.php');
 require_once('lib/Config.php');
+require_once('lib/OAuth.php');
 
 $BULLSHIT_CARDS = [
     "azcanta",

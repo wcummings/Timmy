@@ -3,11 +3,11 @@ require_once('DbCore.php');
 
 class IdempotencyCheck extends DbCore {
 
-    function __construct($db) {
+    public function __construct($db) {
         parent::__construct($db);
     }
 
-    function checkEventId($eventId) {
+    public function checkEventId($eventId) {
         return $this->withTransaction(function () use ($eventId) {
             $result = $this->executeQueryWithParameters('SELECT count(*) AS c FROM webhook_idempotency WHERE event_id = :event_id', [
                 'event_id' => $eventId

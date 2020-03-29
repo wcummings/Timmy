@@ -6,12 +6,6 @@ require_once('lib/Scoreboard.php');
 require_once('lib/IdempotencyCheck.php');
 require_once('lib/Config.php');
 
-$COMMANDER_WEBHOOK = Config::webhookURL();
-
-if (Config::TEST_MODE) {
-    $COMMANDER_WEBHOOK = 'http://localhost/' . Config::URL_PREFIX . 'test_webhook.php';
-}
-
 $BULLSHIT_CARDS = [
     "azcanta",
     "land tax",
@@ -24,7 +18,8 @@ $BULLSHIT_CARDS = [
 ];
 
 $db = new SQLite3('timmy.db');
-$bot = new BotCore();
+$oauth = new OAuth($db);
+$bot = new BotCore($oauth);
 $bot->setValue('db', $db);
 
 foreach ($BULLSHIT_CARDS as $bullshit_card) {
@@ -35,16 +30,15 @@ $bot->registerRegex('/^Timmy show.*the scoreboard/i', 'showScoreboard');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
-$bot->RegisterRegex('/^Timmy roll a d(\d+)/i', 'rollDie');
-$bot->RegisterRegex('/^Timmy roll (\d+) d(\d+)/i', 'rollDice');
+$bot->registerRegex('/^Timmy roll a d(\d+)/i', 'rollDie');
+$bot->registerRegex('/^Timmy roll (\d+) d(\d+)/i', 'rollDice');
 $bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 
-function handleBullshitCard($bot, $matches) {
-    // $bot->respond(Util::memeify($matches[0] . 'is a bullshit card'));
-    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], Util::memeify($matches[0] . ' is a bullshit card'));
+function handleBullshitCard($bot, $ctx, $matches) {
+    $bot->reply($ctx, Util::memeify($matches[0] . ' is a bullshit card'));
 }
 
-function showScoreboard($bot, $matches) {
+function showScoreboard($bot, $ctx, $matches) {
     $scoreboard = new Scoreboard($bot->getValue('db'));
 
     $response = '';
@@ -52,10 +46,10 @@ function showScoreboard($bot, $matches) {
         $response .= sprintf(":star: *%s:* %d\n", ucfirst($score['nickname']), $score['total_wins']);
     }
 
-    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], $response);
+    $bot->reply($ctx, $response);
 }
 
-function recordGame($bot, $matches) {
+function recordGame($bot, $ctx, $matches) {
     $scoreboard = new Scoreboard($bot->getValue('db'));
 
     $playerNicknamesString = strtolower($matches[1]);
@@ -64,27 +58,26 @@ function recordGame($bot, $matches) {
 
     try {
         $scoreboard->recordGame($playerNicknames, $winnerNickname);
-        Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'Your wish is my command');
+        $bot->reply($ctx, 'Your wish is my command');
     } catch (Exception $e) {
-        Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], $e->getMessage());
+        $bot->reply($ctx, $e->getMessage());
     }
-
 }
 
-function rollDie($bot, $matches) {
+function rollDie($bot, $ctx, $matches) {
     $sides = $matches[1];
-    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'BIG MONAYYYY.....');
+    $bot->reply($ctx, 'BIG MONAYYYY.....');
     sleep(2);
-    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], sprintf(':game_die: *(%d)* :game_die:', rand(1, $sides)));
+    $bot->reply($ctx, sprintf(':game_die: *(%d)* :game_die:', rand(1, $sides)));
 }
 
-function rollDice($bot, $matches) {
+function rollDice($bot, $ctx, $matches) {
     $no_rolls = $matches[1];
     $sides = $matches[2];
     $rolls = [];
     
     if ($no_rolls > 10) {
-        Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], Util::memeify('This isnt Warhammer bro'));
+        $bot->reply($ctx, Util::memeify('This isnt Warhammer bro'));
         return;
     }
 
@@ -92,13 +85,13 @@ function rollDice($bot, $matches) {
         $rolls[] = rand(1, $sides);
     }
 
-    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'NOOOO WHAMMMMIEEESS.....');
+    $bot->reply($ctx, 'NOOOO WHAMMMMIEEESS.....');
     sleep(2);
-    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], ':game_die: ' . implode(' ', array_map(function ($roll) { return " *(".$roll.")* "; }, $rolls)) . ' :game_die:');
+    $bot->reply($ctx, ':game_die: ' . implode(' ', array_map(function ($roll) { return " *(".$roll.")* "; }, $rolls)) . ' :game_die:');
 }
 
-function iDontUnderstand($bot, $matches) {
-    Util::sendSlackMessage($GLOBALS['COMMANDER_WEBHOOK'], 'I don\'t understand');
+function iDontUnderstand($bot, $ctx, $matches) {
+    $bot->reply($ctx, 'I don\'t understand');
 }
 
 Util::processQueueMessages(function ($msg) use ($bot, $db) {
@@ -113,6 +106,6 @@ Util::processQueueMessages(function ($msg) use ($bot, $db) {
         }
     }
 
-    $bot->handleMessage($body['event']['text']);
+    $bot->handleMessage($body);
 });
 ?>

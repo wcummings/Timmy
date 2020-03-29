@@ -10,11 +10,11 @@ class Scoreboard extends DbCore {
     const REGISTER_PLAYER_QUERY = 'INSERT INTO players (nickname) VALUES (:nickname)';
     const DB_FILENAME = 'timmy.db';
 
-    function __construct($db) {
+    public function __construct($db) {
         parent::__construct($db);
     }
 
-    function getScores() {
+    public function getScores() {
         $result = $this->db->query(self::GET_SCORES_QUERY);
         $nicknames = $this->getPlayerIDMap();
         $scores = [];
@@ -31,7 +31,7 @@ class Scoreboard extends DbCore {
         return $scores;
     }
 
-    function recordGame($playerNicknames, $winnerNickname, $comment = "") {
+    public function recordGame($playerNicknames, $winnerNickname, $comment = "") {
         $this->withTransaction(function () use ($playerNicknames, $winnerNickname, $comment) {
             $this->executeQueryWithParameters(self::INSERT_GAME_QUERY, ['comment' => $comment]);
 
@@ -64,7 +64,7 @@ class Scoreboard extends DbCore {
         });
     }
 
-    function registerPlayer($nickname) {
+    public function registerPlayer($nickname) {
         $this->executeQueryWithParameters(self::REGISTER_PLAYER_QUERY, ['nickname' => strtolower($nickname)]);
     }
 

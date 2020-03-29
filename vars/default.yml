@@ -8,4 +8,6 @@ ansible_python_interpreter: /usr/bin/python3
 webhook_secret: ""
 test_mode: false
 log_dir: "/var/log/timmy"
-hosts: "{{ variable_host | default('web') }}"
+hosts: "{{ target_host | default('timmy') }}"
+client_id: ""
+client_secret: ""

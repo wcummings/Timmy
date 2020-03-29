@@ -63,6 +63,14 @@
         group: www-data
         mode: 0775
 
+    - name: Copy oauth route
+      copy:
+        src: "{{ playbook_dir }}/src/oauth.php"
+        dest: "/var/www/{{ http_host }}/timmy/"
+        owner: www-data
+        group: www-data
+        mode: 0775
+
     - name: Copy application files
       copy:
         src: "{{ playbook_dir }}/src/lib"

@@ -5,7 +5,7 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class Util {
     
-    function memeify($str) {
+    public static function memeify($str) {
         $result = "";
         for ($i = 0; $i < strlen($str); $i++) {
             $char = substr($str, $i, 1);
@@ -18,7 +18,7 @@ class Util {
         return $result;
     }
 
-    function sendSlackMessage($webhookURL, $text) {
+    public static function sendSlackMessage($webhookURL, $text) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $webhookURL);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -28,7 +28,16 @@ class Util {
         echo $result;
     }
 
-    function handleWebhookChallenge() {
+    public static function httpGet($url) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_Setopt($ch, CURLOPT_HTTPGET, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+        $result = curl_exec($ch);
+        return $result;
+    }
+    
+    public static function handleWebhookChallenge() {
         $in = file_get_contents("php://input");
         $body = json_decode($in, true);
         if (array_key_exists("challenge", $body)) {
@@ -42,7 +51,7 @@ class Util {
         return $body;
     }
 
-    function publishQueueMessage($payload) {
+    public static function publishQueueMessage($payload) {
         $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
         $channel = $connection->channel();
 
@@ -59,7 +68,7 @@ class Util {
         $connection->close();
     }
 
-    function processQueueMessages($callback)  {
+    public static function processQueueMessages($callback)  {
         $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
         $channel = $connection->channel();
 
@@ -77,7 +86,7 @@ class Util {
         $connection->close();
     }
 
-    function configureErrorLogging() {
+    public static function configureErrorLogging() {
         ini_set('log_errors', TRUE);
         error_reporting(E_ALL);
     }

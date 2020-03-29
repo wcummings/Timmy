@@ -20,3 +20,16 @@ CREATE TABLE IF NOT EXISTS game_line_item (
 CREATE TABLE IF NOT EXISTS webhook_idempotency (
        event_id VARCHAR(24) PRIMARY KEY
 );
+
+CREATE TABLE IF NOT EXISTS webhooks (
+       channel_id VARCHAR(10) PRIMARY KEY,
+       team_id VARCHAR(10) NOT NULL,
+       channel VARCHAR(64) NOT NULL,
+       url VARCHAR(2048) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS access_tokens (
+       team_id VARCHAR(10) PRIMARY KEY,
+       access_token VARCHAR(128) NOT NULL,
+       bot_user_id VARCHAR(10) NOT NULL
+);

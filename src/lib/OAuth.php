@@ -5,9 +5,9 @@ require_once('lib/Util.php');
 
 class OAuth extends DbCore {
 
-    const SCOPES = ['incoming-webhook'];
-    const AUTHORIZE_TPL = 'https://slack.com/oauth/v2/authorize?scope=%s&client_id=%s';
-    const ACCESS_TPL = 'https://slack.com/api/oauth.v2.access?client_id=%s&client_secret=%s&code=%s';
+    const SCOPES = ['incoming-webhook', 'bot'];
+    const AUTHORIZE_TPL = 'https://slack.com/oauth/authorize?scope=%s&client_id=%s';
+    const ACCESS_TPL = 'https://slack.com/api/oauth.access?client_id=%s&client_secret=%s&code=%s';
     const INSERT_WEBHOOK_QUERY = 'INSERT OR REPLACE INTO webhooks (channel_id, team_id, channel, url) VALUES (:channel_id, :team_id, :channel, :url);';
     const INSERT_TOKEN_QUERY = 'INSERT OR REPLACE INTO access_tokens (team_id, access_token, bot_user_id) VALUES (:team_id, :access_token, :bot_user_id)';
     const GET_WEBHOOK_QUERY = 'SELECT url FROM webhooks WHERE channel_id = :channel_id';
@@ -17,7 +17,7 @@ class OAuth extends DbCore {
     }
 
     public static function authorizeURL() {
-        return sprintf(self::AUTHORIZE_TPL, implode(',', $SCOPES), Config::CLIENT_ID);
+        return sprintf(self::AUTHORIZE_TPL, implode(',', self::SCOPES), Config::CLIENT_ID);
     }
 
     public static function accessURL($code) {
@@ -34,13 +34,13 @@ class OAuth extends DbCore {
         
         $this->withTransaction(function () use ($data) {
             $this->executeQueryWithParameters(self::INSERT_TOKEN_QUERY, [
-                'team_id' => $data['team']['id'],
+                'team_id' => $data['team_id'],
                 'access_token' => $data['access_token'],
-                'bot_user_id' => $data['bot_user_id']
+                'bot_user_id' => $data['bot']['bot_user_id']
             ]);
             $this->executeQueryWithParameters(self::INSERT_WEBHOOK_QUERY, [
                 'channel_id' => $data['incoming_webhook']['channel_id'],
-                'team_id' => $data['team']['id'],
+                'team_id' => $data['team_id'],
                 'channel' => $data['incoming_webhook']['channel'],
                 'url' => $data['incoming_webhook']['url']
             ]);

@@ -15,7 +15,9 @@ $BULLSHIT_CARDS = [
     "yuriko",
     "homeward path",
     "grand abolisher",
-    "protean hulk"
+    "protean hulk",
+    "teferi's protection"
+    "teferis protection"
 ];
 
 $db = new SQLite3('timmy.db');

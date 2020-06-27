@@ -57,6 +57,7 @@ function showScoreboard($bot, $ctx, $matches) {
     $scoreboard = new Scoreboard($bot->getValue('db'));
 
     $response = '';
+    $is_first = TRUE;
     foreach ($scoreboard->getScores() as $score) {
         $winrate = $score['winrate'];
         if (is_null($winrate)) {
@@ -65,7 +66,13 @@ function showScoreboard($bot, $ctx, $matches) {
             $winrate = strval($winrate) . "%";
         }
 
-        $response .= sprintf(":star: *%s:* %d (%s)\n", ucfirst($score['nickname']), $score['total_wins'], $winrate);
+        $emoji = 'star';
+        if ($is_first) {
+            $emoji = 'crown';
+        }
+
+        $response .= sprintf(":%s: *%s:* %d (%s)\n", $emoji, ucfirst($score['nickname']), $score['total_wins'], $winrate);
+        $is_first = FALSE;
     }
 
     $bot->reply($ctx, $response);

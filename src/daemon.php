@@ -41,8 +41,13 @@ $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was th
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
 $bot->registerRegex('/^Timmy roll a d(\d+)/i', 'rollDie');
 $bot->registerRegex('/^Timmy roll (\d+) d(\d+)/i', 'rollDice');
+$bot->registerRegex('/^Timmy memeify (.*)/i', 'memeifyMessage');
 $bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 $bot->registerRegex('/\[\[.*bolas.*\]\]/', 'showBolasCard');
+
+function memeifyMessage($bot, $ctx, $matches) {
+    $bot->reply($ctx, Util::memeify($matches[1]);
+}
 
 function showBolasCard($bot, $ctx, $matches) {
     $card .= Util::memeify("MY POWER IS HAVING EVERY POWER") . " " . $GLOBALS['BOLAS_CARDS'][array_rand($GLOBALS['BOLAS_CARDS'])];;

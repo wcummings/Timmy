@@ -45,7 +45,7 @@ $bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 $bot->registerRegex('/\[\[.*bolas.*\]\]/', 'showBolasCard');
 
 function showBolasCard($bot, $ctx, $matches) {
-    $card = $GLOBALS['BOLAS_CARDS'][array_rand($BOLAS_CARDS)];
+    $card .= Util::memeify("MY POWER IS HAVING EVERY POWER") . " " . $GLOBALS['BOLAS_CARDS'][array_rand($GLOBALS['BOLAS_CARDS'])];;
     $bot->reply($ctx, $card);
 }
 

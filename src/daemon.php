@@ -45,7 +45,7 @@ $bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 $bot->registerRegex('/\[\[.*bolas.*\]\]/', 'showBolasCard');
 
 function showBolasCard($bot, $ctx, $matches) {
-    $card = $BOLAS_CARDS[array_rand($BOLAS_CARDS)];
+    $card = $GLOBALS['BOLAS_CARDS'][array_rand($BOLAS_CARDS)];
     $bot->reply($ctx, $card);
 }
 

@@ -47,7 +47,14 @@ function showScoreboard($bot, $ctx, $matches) {
 
     $response = '';
     foreach ($scoreboard->getScores() as $score) {
-        $response .= sprintf(":star: *%s:* %d\n", ucfirst($score['nickname']), $score['total_wins']);
+        $winrate = $score['winrate'];
+        if (is_null($winrate)) {
+            $winrate = 'N/A';
+        } else {
+            $winrate = strval($winrate) . "%";
+        }
+
+        $response .= sprintf(":star: *%s:* %d (%s)\n", ucfirst($score['nickname']), $score['total_wins'], $winrate);
     }
 
     $bot->reply($ctx, $response);

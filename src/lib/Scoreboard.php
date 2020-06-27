@@ -5,10 +5,10 @@ class Scoreboard extends DbCore {
 
     const INSERT_GAME_QUERY = 'INSERT INTO games (comment) VALUES (:comment)';
     const INSERT_LINE_ITEM_QUERY = 'INSERT INTO game_line_item (game_id, player_id, is_winner) VALUES (:game_id, :player_id, :is_winner)';
-    const GET_SCORES_QUERY = 'SELECT nickname, count(nickname) AS total_wins FROM game_line_item JOIN players ON players.id = player_id WHERE is_winner=1 GROUP BY player_id ORDER BY total_wins DESC;';
     const GET_ALL_PLAYERS_QUERY = 'SELECT * FROM players;';
     const REGISTER_PLAYER_QUERY = 'INSERT INTO players (nickname) VALUES (:nickname)';
     const DB_FILENAME = 'timmy.db';
+    const GET_SCORES_QUERY = 'SELECT nickname, total_wins, ROUND(total_wins*1.0 / total, 2) AS winrate FROM (SELECT player_id, SUM(CASE WHEN is_winner THEN 1 ELSE 0 END) AS total_wins, COUNT(player_id) AS total FROM game_line_item GROUP BY player_id) JOIN players ON players.id = player_id ORDER BY total_wins DESC;';
 
     public function __construct($db) {
         parent::__construct($db);
@@ -25,7 +25,7 @@ class Scoreboard extends DbCore {
 
         // Insert zero's for remaining players because we can't RIGHT JOIN
         foreach ($nicknames as $key => $value) {
-            $scores[] = ['nickname' => $key, 'total_wins' => 0];
+            $scores[] = ['nickname' => $key, 'total_wins' => 0, 'win_rate' => NULL];
         }
 
         return $scores;

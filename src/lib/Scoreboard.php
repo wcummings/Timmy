@@ -25,7 +25,7 @@ class Scoreboard extends DbCore {
 
         // Insert zero's for remaining players because we can't RIGHT JOIN
         foreach ($nicknames as $key => $value) {
-            $scores[] = ['nickname' => $key, 'total_wins' => 0, 'win_rate' => NULL];
+            $scores[] = ['nickname' => $key, 'total_wins' => 0, 'winrate' => NULL];
         }
 
         return $scores;

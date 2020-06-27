@@ -35,6 +35,7 @@ foreach ($BULLSHIT_CARDS as $bullshit_card) {
 }
 
 $bot->registerRegex('/^Timmy show.*the scoreboard/i', 'showScoreboard');
+$bot->registerRegex('/^Timmy show.*the score.*/i', 'showScoreboard');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
 $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');

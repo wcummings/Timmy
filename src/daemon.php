@@ -21,6 +21,10 @@ $BULLSHIT_CARDS = [
     "expropriate"
 ];
 
+$BOLAS_CARDS = [
+    "https://i.redd.it/f9w6hz7ycin21.jpg"
+];
+
 $db = new SQLite3('timmy.db');
 $oauth = new OAuth($db);
 $bot = new BotCore($oauth);
@@ -37,6 +41,12 @@ $bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was
 $bot->registerRegex('/^Timmy roll a d(\d+)/i', 'rollDie');
 $bot->registerRegex('/^Timmy roll (\d+) d(\d+)/i', 'rollDice');
 $bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
+$bot->registerRegex('/\[\[.*bolas.*\]\]/', 'showBolasCard');
+
+function showBolasCard($bot, $ctx, $matches) {
+    $card = $BOLAS_CARDS[array_rand($BOLAS_CARDS)];
+    $bot->reply($ctx, $card);
+}
 
 function handleBullshitCard($bot, $ctx, $matches) {
     $bot->reply($ctx, Util::memeify($matches[0] . ' is a bullshit card'));

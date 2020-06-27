@@ -34,19 +34,19 @@ foreach ($BULLSHIT_CARDS as $bullshit_card) {
     $bot->registerRegex('/(' . strtolower($bullshit_card) . ')/i', 'handleBullshitCard');
 }
 
-$bot->registerRegex('/^Timmy show.*the scoreboard/i', 'showScoreboard');
-$bot->registerRegex('/^Timmy show.*the score.*/i', 'showScoreboard');
-$bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
-$bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
-$bot->registerRegex('/^Timmy record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
-$bot->registerRegex('/^Timmy roll a d(\d+)/i', 'rollDie');
-$bot->registerRegex('/^Timmy roll (\d+) d(\d+)/i', 'rollDice');
-$bot->registerRegex('/^Timmy memeify (.*)/i', 'memeifyMessage');
-$bot->registerRegex('/^Timmy/i', 'iDontUnderstand');
 $bot->registerRegex('/\[\[.*bolas.*\]\]/', 'showBolasCard');
+$bot->registerCommand('/^show.*the scoreboard/i', 'showScoreboard');
+$bot->registerCommand('/^show.*the score.*/i', 'showScoreboard');
+$bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
+$bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
+$bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
+$bot->registerCommand('/^roll a d(\d+)/i', 'rollDie');
+$bot->registerCommand('/^roll (\d+) d(\d+)/i', 'rollDice');
+$bot->registerCommand('/^memeify (.*)/i', 'memeifyMessage');
+$bot->registerCommand('/.*/', 'iDontUnderstand');
 
 function memeifyMessage($bot, $ctx, $matches) {
-    $bot->reply($ctx, Util::memeify($matches[1]);
+    $bot->reply($ctx, Util::memeify($matches[1]));
 }
 
 function showBolasCard($bot, $ctx, $matches) {

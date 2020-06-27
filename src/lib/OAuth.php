@@ -11,6 +11,7 @@ class OAuth extends DbCore {
     const INSERT_WEBHOOK_QUERY = 'INSERT OR REPLACE INTO webhooks (channel_id, team_id, channel, url) VALUES (:channel_id, :team_id, :channel, :url);';
     const INSERT_TOKEN_QUERY = 'INSERT OR REPLACE INTO access_tokens (team_id, access_token, bot_user_id) VALUES (:team_id, :access_token, :bot_user_id)';
     const GET_WEBHOOK_QUERY = 'SELECT url FROM webhooks WHERE channel_id = :channel_id';
+    const GET_BOT_USER_ID = 'SELECT bot_user_id FROM access_tokens WHERE team_id = :team_id';
 
     public function __construct($db) {
         parent::__construct($db);
@@ -59,6 +60,16 @@ class OAuth extends DbCore {
             return NULL;
         } else {
             return $row['url'];
+        }
+    }
+
+    public function getBotUserId($team_id) {
+        $result = $this->executeQueryWithParameters(self::GET_BOT_USER_ID, ['team_id' => $team_id]);
+        $row = $result->fetchArray(SQLITE3_ASSOC);
+        if (!$row) {
+            return NULL;
+        } else {
+            return $row['bot_user_id'];
         }
     }
 

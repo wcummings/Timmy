@@ -16,8 +16,9 @@ $BULLSHIT_CARDS = [
     "homeward path",
     "grand abolisher",
     "protean hulk",
-    "teferi's protection"
-    "teferis protection"
+    "teferi's protection",
+    "teferis protection",
+    "expropriate"
 ];
 
 $db = new SQLite3('timmy.db');

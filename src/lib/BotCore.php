@@ -1,4 +1,6 @@
 <?php
+require_once('lib/BotContext.php');
+
 class BotCore {
 
     public function __construct($oauth) {
@@ -32,8 +34,7 @@ class BotCore {
         $bot_user_id = $this->oauth->getBotUserId($team_id);
         $at_mention = '<@' . $bot_user_id . '>';
 
-        // TODO: Make a class to represent context
-        $ctx = ['channel_id' => $channel_id];
+        $ctx = new BotContext($channel_id, $team_id);
         if (strstr($message, $at_mention)) {
             $rest = trim(str_replace($at_mention, '', $message));
             foreach ($this->commandRegex as $regexFnPair) {
@@ -55,7 +56,7 @@ class BotCore {
     }
 
     public function reply($ctx, $message) {
-        $webhookURL = $this->oauth->getWebhookForChannel($ctx['channel_id']);
+        $webhookURL = $this->oauth->getWebhookForChannel($ctx->getChannelID());
         if ($webhookURL != NULL) {
             Util::sendSlackMessage($webhookURL, $message);
         }

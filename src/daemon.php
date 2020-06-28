@@ -34,7 +34,7 @@ foreach ($BULLSHIT_CARDS as $bullshit_card) {
     $bot->registerRegex('/(' . strtolower($bullshit_card) . ')/i', 'handleBullshitCard');
 }
 
-$bot->registerRegex('/\[\[.*bolas.*\]\]/', 'showBolasCard');
+$bot->registerRegex('/\[\[.*bolas.*\]\]/i', 'showBolasCard');
 $bot->registerCommand('/^show.*the scoreboard/i', 'showScoreboard');
 $bot->registerCommand('/^show.*the score.*/i', 'showScoreboard');
 $bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
@@ -59,32 +59,32 @@ function handleBullshitCard($bot, $ctx, $matches) {
 }
 
 function showScoreboard($bot, $ctx, $matches) {
-    $scoreboard = new Scoreboard($bot->getValue('db'));
+    $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID());
 
     $response = '';
-    $is_first = TRUE;
+    $isFirst = TRUE;
     foreach ($scoreboard->getScores() as $score) {
         $winrate = $score['winrate'];
         if (is_null($winrate)) {
-            $winrate = 'N/A';
+            $winrate = '';
         } else {
-            $winrate = strval($winrate) . "%";
+            $winrate = '(' . strval($winrate) . '%)';
         }
 
         $emoji = 'star';
-        if ($is_first) {
+        if ($isFirst) {
             $emoji = 'crown';
         }
 
-        $response .= sprintf(":%s: *%s:* %d (%s)\n", $emoji, ucfirst($score['nickname']), $score['total_wins'], $winrate);
-        $is_first = FALSE;
+        $response .= sprintf(":%s: *%s:* %d %s\n", $emoji, ucfirst($score['nickname']), $score['total_wins'], $winrate);
+        $isFirst = FALSE;
     }
 
     $bot->reply($ctx, $response);
 }
 
 function recordGame($bot, $ctx, $matches) {
-    $scoreboard = new Scoreboard($bot->getValue('db'));
+    $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID());
 
     $playerNicknamesString = strtolower($matches[1]);
     $playerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $playerNicknamesString), function ($s) { return $s != ''; });

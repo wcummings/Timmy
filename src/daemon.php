@@ -35,6 +35,7 @@ foreach ($BULLSHIT_CARDS as $bullshit_card) {
 }
 
 $bot->registerRegex('/\[\[.*bolas.*\]\]/i', 'showBolasCard');
+$bot->registerRegex('/\[\[.*yawgmoth tree.*\]\]/i', 'showYawgmothTree');
 $bot->registerCommand('/^show.*the scoreboard/i', 'showScoreboard');
 $bot->registerCommand('/^show.*the score.*/i', 'showScoreboard');
 $bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
@@ -52,6 +53,10 @@ function memeifyMessage($bot, $ctx, $matches) {
 function showBolasCard($bot, $ctx, $matches) {
     $card .= Util::memeify("MY POWER IS HAVING EVERY POWER") . " " . $GLOBALS['BOLAS_CARDS'][array_rand($GLOBALS['BOLAS_CARDS'])];;
     $bot->reply($ctx, $card);
+}
+
+function showYawgmothTree($bot, $ctx, $matches) {
+    $bot->reply($ctx, "https://i.redd.it/ybqoaqmn8ei21.png");
 }
 
 function handleBullshitCard($bot, $ctx, $matches) {

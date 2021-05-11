@@ -5,10 +5,10 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class Util {
    
-    const SEND_MESSAGE_URL = "https://slack.com/api/chat.postMessage?token=%s&channel=%s&text=%s";
+    const SEND_MESSAGE_URL = "https://slack.com/api/chat.postMessage?token=%s&channel=%s&text=%s&unfurl_media=true&unfurl_links=true";
 
     public static function sendSlackMessage($accessToken, $teamId, $channelId, $text) {
-        $response = json_decode(self::httpPost(sprintf(self::SEND_MESSAGE_URL, $accessToken, $channelId, urlencode($text)), NULL));
+        $response = json_decode(self::httpPost(sprintf(self::SEND_MESSAGE_URL, $accessToken, $channelId, urlencode($text)), NULL), TRUE);
         return $response;
     }
  
@@ -26,6 +26,7 @@ class Util {
     }
 
     public static function httpPost($url, $payload) {
+        echo "URL = " . $url;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -35,7 +36,7 @@ class Util {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         $result = curl_exec($ch);
-        echo $result;
+        return $result;
     }
 
     public static function httpGet($url) {

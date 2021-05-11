@@ -7,6 +7,7 @@ require_once('lib/IdempotencyCheck.php');
 require_once('lib/Config.php');
 require_once('lib/OAuth.php');
 require_once('lib/Scryfall.php');
+require_once('lib/Slack.php');
 
 $BULLSHIT_CARDS = [
     "azcanta",
@@ -30,6 +31,7 @@ $db = new SQLite3('timmy.db');
 $oauth = new OAuth($db);
 $bot = new BotCore($oauth);
 $bot->setValue('db', $db);
+$bot->setValue('oauth', $oauth);
 
 foreach ($BULLSHIT_CARDS as $bullshit_card) {
     $bot->registerRegex('/(' . strtolower($bullshit_card) . ')/i', 'handleBullshitCard');
@@ -48,16 +50,21 @@ $bot->registerCommand('/^memeify (.*)/i', 'memeifyMessage');
 $bot->registerCommand('/^scry (.*)/i', 'scryfallSearch');
 $bot->registerCommand('/.*/', 'iDontUnderstand');
 
+/*
+{"token":"ZWo2O8fankBnJb6v56BqHXIh","team_id":"TFVMPACSG","api_app_id":"AHKKQF5C2","event":{"type":"reaction_added","user":"UFV6274TA","item":{"type":"message","channel":"CHX0WE7MK","ts":"1620756102.011600"},"reaction":"white_check_mark","event_ts":"1620756362.012300"},"type":"event_callback","event_id":"Ev021DA03K54","event_time":1620756362,"authed_users":["UHKKYEYUA"],"authorizations":[{"enterprise_id":null,"team_id":"TFVMPACSG","user_id":"UHKKYEYUA","is_bot":true,"is_enterprise_install":false}],"is_ext_shared_channel":false,"event_context":"2-reaction_added-TFVMPACSG-AHKKQF5C2-CHX0WE7MK"}
+ */
+
 function scryfallSearch($bot, $ctx, $matches) {
     $query = $matches[1];
     $response = Scryfall::search($query);
     if ($response['total_cards'] > 0) {
         $firstCard = $response['data'][0];
         $message = $bot->reply($ctx, $firstCard['image_uris']['normal']);
-        if ($message != NULL) {
-            $ts = $message['ts'];
-            echo "ts = $ts\n";
-        }
+        $oauth = $bot->getValue('oauth');
+        $token = $oauth->getAccessToken($ctx->getTeamId());
+        $ts = $message['ts'];
+        Slack::addReaction($token, $ctx->getChannelId(), $ts, 'arrow_left');
+        Slack::addReaction($token, $ctx->getChannelId(), $ts, 'arrow_right');
     } else {
         $bot->reply($ctx, 'No cards matching query');
     }

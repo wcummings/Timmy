@@ -5,7 +5,7 @@ require_once('lib/Util.php');
 
 class OAuth extends DbCore {
 
-    const SCOPES = ['incoming-webhook', 'bot', 'chat:write:bot'];
+    const SCOPES = ['incoming-webhook', 'bot', 'chat:write:bot', 'reactions:write'];
     const AUTHORIZE_TPL = 'https://slack.com/oauth/authorize?scope=%s&client_id=%s';
     const ACCESS_TPL = 'https://slack.com/api/oauth.access?client_id=%s&client_secret=%s&code=%s';
     const INSERT_WEBHOOK_QUERY = 'INSERT OR REPLACE INTO webhooks (channel_id, team_id, channel, url) VALUES (:channel_id, :team_id, :channel, :url);';

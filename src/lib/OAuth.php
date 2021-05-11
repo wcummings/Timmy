@@ -5,14 +5,15 @@ require_once('lib/Util.php');
 
 class OAuth extends DbCore {
 
-    const SCOPES = ['incoming-webhook', 'bot'];
+    const SCOPES = ['incoming-webhook', 'bot', 'chat:write:bot'];
     const AUTHORIZE_TPL = 'https://slack.com/oauth/authorize?scope=%s&client_id=%s';
     const ACCESS_TPL = 'https://slack.com/api/oauth.access?client_id=%s&client_secret=%s&code=%s';
     const INSERT_WEBHOOK_QUERY = 'INSERT OR REPLACE INTO webhooks (channel_id, team_id, channel, url) VALUES (:channel_id, :team_id, :channel, :url);';
     const INSERT_TOKEN_QUERY = 'INSERT OR REPLACE INTO access_tokens (team_id, access_token, bot_user_id) VALUES (:team_id, :access_token, :bot_user_id)';
     const GET_WEBHOOK_QUERY = 'SELECT url FROM webhooks WHERE channel_id = :channel_id';
     const GET_BOT_USER_ID = 'SELECT bot_user_id FROM access_tokens WHERE team_id = :team_id';
-
+    const GET_ACCESS_TOKEN = 'SELECT access_token FROM access_tokens WHERE team_id = :team_id';
+    
     public function __construct($db) {
         parent::__construct($db);
     }
@@ -73,7 +74,14 @@ class OAuth extends DbCore {
         }
     }
 
-    // TODO: method to retrieve access token
+    public function getAccessToken($team_id) {
+        $result = $this->executeQueryWithParameters(self::GET_ACCESS_TOKEN, ['team_id' => $team_id]);
+        $row = $result->fetchArray(SQLITE3_ASSOC);
+        if (!$row) {
+            throw new Exception('Uh oh');
+        }
+        return $row['access_token'];
+    }
 
 }
 ?>

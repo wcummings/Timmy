@@ -37,7 +37,7 @@ class OAuth extends DbCore {
         $this->withTransaction(function () use ($data) {
             $this->executeQueryWithParameters(self::INSERT_TOKEN_QUERY, [
                 'team_id' => $data['team_id'],
-                'access_token' => $data['access_token'],
+                'access_token' => $data['bot']['bot_access_token'],
                 'bot_user_id' => $data['bot']['bot_user_id']
             ]);
             $this->executeQueryWithParameters(self::INSERT_WEBHOOK_QUERY, [

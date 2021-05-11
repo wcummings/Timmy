@@ -4,7 +4,14 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class Util {
-    
+   
+    const SEND_MESSAGE_URL = "https://slack.com/api/chat.postMessage?token=%s&channel=%s&text=%s";
+
+    public static function sendSlackMessage($accessToken, $teamId, $channelId, $text) {
+        $response = json_decode(self::httpPost(sprintf(self::SEND_MESSAGE_URL, $accessToken, $channelId, urlencode($text)), NULL));
+        return $response;
+    }
+ 
     public static function memeify($str) {
         $result = "";
         for ($i = 0; $i < strlen($str); $i++) {
@@ -18,12 +25,15 @@ class Util {
         return $result;
     }
 
-    public static function sendSlackMessage($webhookURL, $text) {
+    public static function httpPost($url, $payload) {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $webhookURL);
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(["text" => $text]));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+        if ($payload != NULL) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        }
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         $result = curl_exec($ch);
         echo $result;
     }

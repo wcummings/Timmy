@@ -6,6 +6,7 @@ require_once('lib/Scoreboard.php');
 require_once('lib/IdempotencyCheck.php');
 require_once('lib/Config.php');
 require_once('lib/OAuth.php');
+require_once('lib/Scryfall.php');
 
 $BULLSHIT_CARDS = [
     "azcanta",
@@ -44,7 +45,23 @@ $bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*The winner was (.*
 $bot->registerCommand('/^roll a d(\d+)/i', 'rollDie');
 $bot->registerCommand('/^roll (\d+) d(\d+)/i', 'rollDice');
 $bot->registerCommand('/^memeify (.*)/i', 'memeifyMessage');
+$bot->registerCommand('/^scry (.*)/i', 'scryfallSearch');
 $bot->registerCommand('/.*/', 'iDontUnderstand');
+
+function scryfallSearch($bot, $ctx, $matches) {
+    $query = $matches[1];
+    $response = Scryfall::search($query);
+    if ($response['total_cards'] > 0) {
+        $firstCard = $response['data'][0];
+        $message = $bot->reply($ctx, $firstCard['image_uris']['normal']);
+        if ($message != NULL) {
+            $ts = $message['ts'];
+            echo "ts = $ts\n";
+        }
+    } else {
+        $bot->reply($ctx, 'No cards matching query');
+    }
+}
 
 function memeifyMessage($bot, $ctx, $matches) {
     $bot->reply($ctx, Util::memeify($matches[1]));

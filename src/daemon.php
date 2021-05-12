@@ -7,6 +7,8 @@ require_once('lib/IdempotencyCheck.php');
 require_once('lib/Config.php');
 require_once('lib/OAuth.php');
 require_once('lib/Scryfall.php');
+require_once('lib/Slack.php');
+require_once('lib/Cache.php');
 
 $BULLSHIT_CARDS = [
     "azcanta",
@@ -29,7 +31,10 @@ $BOLAS_CARDS = [
 $db = new SQLite3('timmy.db');
 $oauth = new OAuth($db);
 $bot = new BotCore($oauth);
+$cache = new Cache($db);
 $bot->setValue('db', $db);
+$bot->setValue('oauth', $oauth);
+$bot->setValue('cache', $cache);
 
 foreach ($BULLSHIT_CARDS as $bullshit_card) {
     $bot->registerRegex('/(' . strtolower($bullshit_card) . ')/i', 'handleBullshitCard');
@@ -47,19 +52,71 @@ $bot->registerCommand('/^roll (\d+) d(\d+)/i', 'rollDice');
 $bot->registerCommand('/^memeify (.*)/i', 'memeifyMessage');
 $bot->registerCommand('/^scry (.*)/i', 'scryfallSearch');
 $bot->registerCommand('/.*/', 'iDontUnderstand');
+$bot->registerReactionHandler('handleReactions');
+
+/*
+{"token":"ZWo2O8fankBnJb6v56BqHXIh","team_id":"TFVMPACSG","api_app_id":"AHKKQF5C2","event":{"type":"reaction_added","user":"UFV6274TA","item":{"type":"message","channel":"CHX0WE7MK","ts":"1620756102.011600"},"reaction":"white_check_mark","event_ts":"1620756362.012300"},"type":"event_callback","event_id":"Ev021DA03K54","event_time":1620756362,"authed_users":["UHKKYEYUA"],"authorizations":[{"enterprise_id":null,"team_id":"TFVMPACSG","user_id":"UHKKYEYUA","is_bot":true,"is_enterprise_install":false}],"is_ext_shared_channel":false,"event_context":"2-reaction_added-TFVMPACSG-AHKKQF5C2-CHX0WE7MK"}
+ */
+
+function scryfallReactCacheKey($ctx, $ts) {
+    return 'scryfall' . "#" . $ctx->getTeamID() . "#" . $ctx->getChannelID() . "#" . $ctx->getUserID() . "#" . $ts;
+}
+
+function scryfallSearchCacheKey($query) {
+    return 'scryfallsearch' . "#" . $query . "#" . date('Y.m.d');
+}
 
 function scryfallSearch($bot, $ctx, $matches) {
+    $cache = $bot->getValue('cache');
     $query = $matches[1];
-    $response = Scryfall::search($query);
+    $response = $cache->cachedJson(scryfallSearchCacheKey($query), function () use ($query) {
+        return Scryfall::search($query);
+    });
     if ($response['total_cards'] > 0) {
         $firstCard = $response['data'][0];
         $message = $bot->reply($ctx, $firstCard['image_uris']['normal']);
-        if ($message != NULL) {
-            $ts = $message['ts'];
-            echo "ts = $ts\n";
-        }
+        $oauth = $bot->getValue('oauth');
+        $token = $oauth->getAccessToken($ctx->getTeamId());
+        $ts = $message['ts'];
+        $cache->setValue(scryfallReactCacheKey($ctx, $ts), json_encode(['query' => $query, 'offset' => 0]));
+        Slack::addReaction($token, $ctx->getChannelId(), $ts, 'arrow_left');
+        Slack::addReaction($token, $ctx->getChannelId(), $ts, 'arrow_right');
     } else {
         $bot->reply($ctx, 'No cards matching query');
+    }
+}
+
+function handleReactions($bot, $ctx, $event) {
+    $cache = $bot->getValue('cache');
+    $oauth = $bot->getValue('oauth');
+    $ts = $event['item']['ts'];
+    $value = json_decode($cache->getValue(scryfallReactCacheKey($ctx, $ts)), TRUE);
+    $query = $value['query'];
+    $offset = $value['offset'];
+    if ($query) {
+        $response = $cache->cachedJson(scryfallSearchCacheKey($query), function () use ($query) {
+            return Scryfall::search($query);
+        });
+
+        $c = count($response['data']);
+        if ($event['reaction'] == 'arrow_left') {
+            $offset = max($offset - 1, 0);
+        } else if ($event['reaction'] == 'arrow_right') {
+            $offset = min($offset + 1, $c - 1);
+        }
+
+        $card = $response['data'][$offset];
+        $token = $oauth->getAccessToken($ctx->getTeamID());
+        $text = $card['image_uris']['normal'];
+        $attachments = [[
+            'image_url' => $card['image_uris']['normal'],
+            'thumb_url' => $card['image_uris']['small'],
+            'fallback' => $text,
+            'text' => $text,
+            'color' => '#7CD197'
+        ]];
+        Slack::updateMessageAndAttachments($token, $ctx->getChannelID(), $ts, $text, $attachments);
+        $cache->setValue(scryfallReactCacheKey($ctx, $ts), json_encode(['query' => $query, 'offset' => $offset]));
     }
 }
 

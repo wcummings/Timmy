@@ -5,7 +5,7 @@ require_once('lib/Util.php');
 
 class OAuth extends DbCore {
 
-    const SCOPES = ['incoming-webhook', 'bot', 'chat:write:bot'];
+    const SCOPES = ['incoming-webhook', 'bot', 'chat:write:bot', 'reactions:write'];
     const AUTHORIZE_TPL = 'https://slack.com/oauth/authorize?scope=%s&client_id=%s';
     const ACCESS_TPL = 'https://slack.com/api/oauth.access?client_id=%s&client_secret=%s&code=%s';
     const INSERT_WEBHOOK_QUERY = 'INSERT OR REPLACE INTO webhooks (channel_id, team_id, channel, url) VALUES (:channel_id, :team_id, :channel, :url);';
@@ -37,7 +37,7 @@ class OAuth extends DbCore {
         $this->withTransaction(function () use ($data) {
             $this->executeQueryWithParameters(self::INSERT_TOKEN_QUERY, [
                 'team_id' => $data['team_id'],
-                'access_token' => $data['access_token'],
+                'access_token' => $data['bot']['bot_access_token'],
                 'bot_user_id' => $data['bot']['bot_user_id']
             ]);
             $this->executeQueryWithParameters(self::INSERT_WEBHOOK_QUERY, [

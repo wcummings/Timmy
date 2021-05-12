@@ -26,7 +26,6 @@ class Util {
     }
 
     public static function httpPost($url, $payload) {
-        echo "URL = " . $url;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -100,6 +99,10 @@ class Util {
     public static function configureErrorLogging() {
         ini_set('log_errors', TRUE);
         error_reporting(E_ALL);
+    }
+
+    public function randomFloat($min = 0, $max = 1) {
+        return $min + mt_rand() / mt_getrandmax() * ($max - $min);
     }
 
 }

@@ -8,6 +8,7 @@ class BotCore {
         $this->botContext = [];
         $this->oauth = $oauth;
         $this->commandRegex = [];
+        $this->reactionHandler = NULL; // FIXME: noop fn here
     }
 
     public function registerRegex($regex, $fn) {
@@ -26,15 +27,31 @@ class BotCore {
         return $this->botContext[$key];
     }
 
+    public function registerReactionHandler($reactionHandler) {
+        $this->reactionHandler = $reactionHandler;
+    }
+
     public function handleMessage($payload) {
         $message = $payload['event']['text'];
         $channel_id = $payload['event']['channel'];
         $team_id = $payload['event']['team'];
+        $event_type = $payload['event']['type'];
+        $user_id = $payload['event']['user'];
         // Look for @mentions
         $bot_user_id = $this->oauth->getBotUserId($team_id);
         $at_mention = '<@' . $bot_user_id . '>';
 
-        $ctx = new BotContext($channel_id, $team_id);
+        if ($event_type == "reaction_added" || $event_type == "reaction_removed") {
+            $ctx = $this->reactionContext($payload);
+            $fn = $this->reactionHandler;
+            if ($fn != NULL) {
+                $fn($this, $this->reactionContext($payload), $payload['event']);
+            }
+            return;
+        }
+
+        $ctx = new BotContext($channel_id, $team_id, $user_id);
+
         if (strstr($message, $at_mention)) {
             $rest = trim(str_replace($at_mention, '', $message));
             foreach ($this->commandRegex as $regexFnPair) {
@@ -53,6 +70,7 @@ class BotCore {
                 return $fn($this, $ctx, $matches);
             }
         }
+
     }
 
     public function reply($ctx, $message) {
@@ -60,6 +78,13 @@ class BotCore {
         if ($token != NULL) {
             return Util::sendSlackMessage($token, $ctx->getTeamId(), $ctx->getChannelId(), $message);
         }
+    }
+
+    private function reactionContext($payload) {
+        $channel_id = $payload['event']['item']['channel'];
+        $user_id = $payload['event']['user'];
+        $team_id = $payload['team_id'];
+        return new BotContext($channel_id, $team_id, $user_id);
     }
 
 }

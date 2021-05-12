@@ -54,6 +54,8 @@ class BotCore {
 
         if (strstr($message, $at_mention)) {
             $rest = trim(str_replace($at_mention, '', $message));
+            // Filter out unprintable stuff so Adam can copy paste
+            $rest = preg_replace('/[^\x20-\x7E]/','', $rest);
             foreach ($this->commandRegex as $regexFnPair) {
                 $regex = $regexFnPair[0];
                 $fn = $regexFnPair[1];

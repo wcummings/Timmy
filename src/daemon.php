@@ -115,8 +115,12 @@ function handleReactions($bot, $ctx, $event) {
             'text' => $text,
             'color' => '#7CD197'
         ]];
-        Slack::updateMessageAndAttachments($token, $ctx->getChannelID(), $ts, $text, $attachments);
-        $cache->setValue(scryfallReactCacheKey($ctx, $ts), json_encode(['query' => $query, 'offset' => $offset]));
+        try {
+            Slack::updateMessageAndAttachments($token, $ctx->getChannelID(), $ts, $text, $attachments);
+            $cache->setValue(scryfallReactCacheKey($ctx, $ts), json_encode(['query' => $query, 'offset' => $offset]));
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+        }
     }
 }
 

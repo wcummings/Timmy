@@ -54,10 +54,6 @@ $bot->registerCommand('/^scry (.*)/i', 'scryfallSearch');
 $bot->registerCommand('/.*/', 'iDontUnderstand');
 $bot->registerReactionHandler('handleReactions');
 
-/*
-{"token":"ZWo2O8fankBnJb6v56BqHXIh","team_id":"TFVMPACSG","api_app_id":"AHKKQF5C2","event":{"type":"reaction_added","user":"UFV6274TA","item":{"type":"message","channel":"CHX0WE7MK","ts":"1620756102.011600"},"reaction":"white_check_mark","event_ts":"1620756362.012300"},"type":"event_callback","event_id":"Ev021DA03K54","event_time":1620756362,"authed_users":["UHKKYEYUA"],"authorizations":[{"enterprise_id":null,"team_id":"TFVMPACSG","user_id":"UHKKYEYUA","is_bot":true,"is_enterprise_install":false}],"is_ext_shared_channel":false,"event_context":"2-reaction_added-TFVMPACSG-AHKKQF5C2-CHX0WE7MK"}
- */
-
 function scryfallReactCacheKey($ctx, $ts) {
     return 'scryfall' . "#" . $ctx->getTeamID() . "#" . $ctx->getChannelID() . "#" . $ctx->getUserID() . "#" . $ts;
 }
@@ -68,7 +64,7 @@ function scryfallSearchCacheKey($query) {
 
 function scryfallSearch($bot, $ctx, $matches) {
     $cache = $bot->getValue('cache');
-    $query = $matches[1];
+    $query = html_entity_decode($matches[1]);
     $response = $cache->cachedJson(scryfallSearchCacheKey($query), function () use ($query) {
         return Scryfall::search($query);
     });

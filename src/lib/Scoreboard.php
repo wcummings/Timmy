@@ -8,15 +8,19 @@ class Scoreboard extends DbCore {
     const GET_ALL_PLAYERS_QUERY = 'SELECT * FROM players WHERE team_id=:team_id;';
     const REGISTER_PLAYER_QUERY = 'INSERT INTO players (team_id, nickname) VALUES (:team_id, :nickname)';
     const DB_FILENAME = 'timmy.db';
-    const GET_SCORES_QUERY = 'SELECT nickname, total_wins, (CASE WHEN total >= 7 THEN ROUND((total_wins*1.0 / total) * 100, 2) ELSE NULL END) AS winrate FROM (SELECT player_id, SUM(CASE WHEN is_winner THEN 1 ELSE 0 END) AS total_wins, COUNT(player_id) AS total FROM game_line_item WHERE team_id=:team_id GROUP BY player_id) JOIN players ON players.id = player_id ORDER BY total_wins DESC;';
+    const GET_SCORES_QUERY = 'SELECT nickname, total_wins, (CASE WHEN total >= 7 THEN ROUND((total_wins*1.0 / total) * 100, 2) ELSE NULL END) AS winrate FROM (SELECT player_id, SUM(CASE WHEN is_winner THEN 1 ELSE 0 END) AS total_wins, COUNT(player_id) AS total FROM game_line_item WHERE team_id=:team_id AND channel_id=:channel_id GROUP BY player_id) JOIN players ON players.id = player_id ORDER BY total_wins DESC;';
 
-    public function __construct($db, $teamID) {
+    public function __construct($db, $teamID, $channelID) {
         $this->teamID = $teamID;
+        $this->channelID = $channelID;
         parent::__construct($db);
     }
 
     public function getScores() {
-        $result = $this->executeQueryWithParameters(self::GET_SCORES_QUERY, ['team_id' => $this->teamID]);
+        $result = $this->executeQueryWithParameters(
+            self::GET_SCORES_QUERY,
+            ['team_id' => $this->teamID, 'channel_id' => $this->channelID]);
+
         $nicknames = $this->getPlayerIDMap();
         $scores = [];
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
@@ -61,6 +65,7 @@ class Scoreboard extends DbCore {
             foreach ($playerNicknames as $nickname) {
                 $this->executeQueryWithParameters(self::INSERT_LINE_ITEM_QUERY, [
                     'team_id' => $this->teamID,
+                    'channel_id' => $this->channelID,
                     'game_id' => $gameID,
                     'player_id' => $playerIDMap[$nickname],
                     'is_winner' => $nickname === $winnerNickname

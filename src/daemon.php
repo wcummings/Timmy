@@ -138,7 +138,7 @@ function handleBullshitCard($bot, $ctx, $matches) {
 }
 
 function showScoreboard($bot, $ctx, $matches) {
-    $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID());
+    $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID(), $ctx->getChannelID());
 
     $response = '';
     $isFirst = TRUE;
@@ -163,7 +163,7 @@ function showScoreboard($bot, $ctx, $matches) {
 }
 
 function recordGame($bot, $ctx, $matches) {
-    $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID());
+    $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID(), $ctx->getChannelID());
 
     $playerNicknamesString = strtolower($matches[1]);
     $playerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $playerNicknamesString), function ($s) { return $s != ''; });

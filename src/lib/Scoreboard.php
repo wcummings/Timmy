@@ -4,7 +4,7 @@ require_once('lib/DbCore.php');
 class Scoreboard extends DbCore {
 
     const INSERT_GAME_QUERY = 'INSERT INTO games (team_id, comment) VALUES (:team_id, :comment)';
-    const INSERT_LINE_ITEM_QUERY = 'INSERT INTO game_line_item (team_id, game_id, player_id, is_winner) VALUES (:team_id, :game_id, :player_id, :is_winner)';
+    const INSERT_LINE_ITEM_QUERY = 'INSERT INTO game_line_item (team_id, game_id, player_id, is_winner, channel_id) VALUES (:team_id, :game_id, :player_id, :is_winner, :channel_id)';
     const GET_ALL_PLAYERS_QUERY = 'SELECT * FROM players WHERE team_id=:team_id;';
     const REGISTER_PLAYER_QUERY = 'INSERT INTO players (team_id, nickname) VALUES (:team_id, :nickname)';
     const DB_FILENAME = 'timmy.db';

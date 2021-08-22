@@ -141,8 +141,9 @@ function showScoreboard($bot, $ctx, $matches) {
     $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID(), $ctx->getChannelID());
 
     $response = '';
-    $isFirst = TRUE;
-    foreach ($scoreboard->getScores() as $score) {
+    $scores = $scoreboard->getScores();
+    $maxScore = max(array_map(function ($score) { return $score['total_wins']; }, $scores));
+    foreach ($scores as $score) {
         $winrate = $score['winrate'];
         if (is_null($winrate)) {
             $winrate = '';
@@ -151,12 +152,12 @@ function showScoreboard($bot, $ctx, $matches) {
         }
 
         $emoji = 'star';
-        if ($isFirst) {
+        $isLeader = $score['total_wins'] == $maxScore;
+        if ($isLeader) {
             $emoji = 'crown';
         }
 
         $response .= sprintf(":%s: *%s:* %d %s\n", $emoji, ucfirst($score['nickname']), $score['total_wins'], $winrate);
-        $isFirst = FALSE;
     }
 
     $bot->reply($ctx, $response);

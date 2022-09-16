@@ -171,7 +171,7 @@ function recordGame($bot, $ctx, $matches) {
     $winnerNickname = trim(strtolower($matches[2]));
 
     try {
-        $scoreboard->recordGame($playerNicknames, $winnerNickname);
+        $scoreboard->recordGame($playerNicknames, [$winnerNickname]);
         $bot->reply($ctx, 'Your wish is my command');
     } catch (Exception $e) {
         $bot->reply($ctx, $e->getMessage());

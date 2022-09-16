@@ -36,21 +36,23 @@ class Scoreboard extends DbCore {
         return $scores;
     }
 
-    public function recordGame($playerNicknames, $winnerNickname, $comment = "") {
-        $this->withTransaction(function () use ($playerNicknames, $winnerNickname, $comment) {
+    public function recordGame($playerNicknames, $winnerNicknames, $comment = "") {
+        $this->withTransaction(function () use ($playerNicknames, $winnerNicknames, $comment) {
             $this->executeQueryWithParameters(self::INSERT_GAME_QUERY, [
                 'team_id' => $this->teamID,
                 'comment' => $comment
             ]);
 
-            $winnerNickname = strtolower($winnerNickname);
+            $winnerNicknames = array_map('strtolower', $winnerNickname);
             $playerNicknames = array_map('strtolower', $playerNicknames);
 
             $gameID = $this->db->lastInsertRowID();
             $playerIDMap = $this->getPlayerIDMap();
 
-            if (!in_array($winnerNickname, $playerNicknames)) {
-                throw new Exception('Winner does not appear in list of players');
+            foreach ($winnerNicknames as $winnerNickname) {
+                if (!in_array($winnerNickname, $playerNicknames)) {
+                    throw new Exception('Winner does not appear in list of players');
+                }
             }
 
             $invalidNicknames = array_filter($playerNicknames, function ($nickname) use($playerIDMap) {
@@ -68,7 +70,7 @@ class Scoreboard extends DbCore {
                     'channel_id' => $this->channelID,
                     'game_id' => $gameID,
                     'player_id' => $playerIDMap[$nickname],
-                    'is_winner' => $nickname === $winnerNickname
+                    'is_winner' => in_array($nickname, $winnerNickname)
                 ]);
             }
         });

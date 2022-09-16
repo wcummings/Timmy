@@ -182,7 +182,7 @@ function recordGame($bot, $ctx, $matches) {
 function recordMultiWinnerGame($bot, $ctx, $matches) {
     $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID(), $ctx->getChannelID());
 
-    $playerNicknamesString = strtolower($matches[1]);
+    $playerNicknamesString = trim(strtolower($matches[1]));
     $winnerNicknamesString = trim(strtolower($matches[2]));
     $playerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $playerNicknamesString), function ($s) { return $s != ''; });
     $winnerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $winnerNicknamesString), function ($s) { return $s != ''; });

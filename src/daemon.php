@@ -47,6 +47,7 @@ $bot->registerCommand('/^show.*the score.*/i', 'showScoreboard');
 $bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*([^ ]+) won/i', 'recordGame');
 $bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*([^ ]+) was the winner/i', 'recordGame');
 $bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*The winner was (.*)/i', 'recordGame');
+$bot->registerCommand('/^record a game with ([^\.,]+)[\.,][ ]*The winners were (.*)/i', 'recordMultiWinnerGame');
 $bot->registerCommand('/^roll a d(\d+)/i', 'rollDie');
 $bot->registerCommand('/^roll (\d+) d(\d+)/i', 'rollDice');
 $bot->registerCommand('/^memeify (.*)/i', 'memeifyMessage');
@@ -177,6 +178,24 @@ function recordGame($bot, $ctx, $matches) {
         $bot->reply($ctx, $e->getMessage());
     }
 }
+
+function recordMultiWinnerGame($bot, $ctx, $matches) {
+    $scoreboard = new Scoreboard($bot->getValue('db'), $ctx->getTeamID(), $ctx->getChannelID());
+
+    $playerNicknamesString = strtolower($matches[1]);
+    $winnerNicknamesString = trim(strtolower($matches[2]));
+    $playerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $playerNicknamesString), function ($s) { return $s != ''; });
+    $winnerNicknames = array_filter(preg_split('/([ ,]+|and)/i', $winnerNicknamesString), function ($s) { return $s != ''; });
+
+    try {
+        $scoreboard->recordGame($playerNicknames, $winnerNicknames);
+        $bot->reply($ctx, 'Your wish is my command');
+    } catch (Exception $e) {
+        $bot->reply($ctx, $e->getMessage());
+    }
+}
+
+
 
 function rollDie($bot, $ctx, $matches) {
     $sides = $matches[1];

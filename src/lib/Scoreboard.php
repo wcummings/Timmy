@@ -43,7 +43,7 @@ class Scoreboard extends DbCore {
                 'comment' => $comment
             ]);
 
-            $winnerNicknames = array_map('strtolower', $winnerNickname);
+            $winnerNicknames = array_map('strtolower', $winnerNicknames);
             $playerNicknames = array_map('strtolower', $playerNicknames);
 
             $gameID = $this->db->lastInsertRowID();

@@ -70,7 +70,7 @@ class Scoreboard extends DbCore {
                     'channel_id' => $this->channelID,
                     'game_id' => $gameID,
                     'player_id' => $playerIDMap[$nickname],
-                    'is_winner' => in_array($nickname, $winnerNickname)
+                    'is_winner' => in_array($nickname, $winnerNicknames)
                 ]);
             }
         });
